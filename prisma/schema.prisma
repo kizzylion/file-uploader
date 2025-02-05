@@ -1,0 +1,62 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Session {
+  id        String   @id
+  sid       String   @unique
+  data      String   @db.Text
+  expiresAt DateTime
+}
+
+model User {
+  id        String   @id @default(cuid())
+  username  String
+  password  String
+  folders   Folder[]
+  files     File[]
+  shareLinks ShareLink[] @relation("UserShareLinks") // Added relation name
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Folder {
+  id        String   @id @default(cuid())
+  name      String
+  parentFolderId String?
+  parentFolder   Folder? @relation("Children", fields: [parentFolderId], references: [id])
+  children   Folder[] @relation("Children")
+  owner      User     @relation(fields: [ownerId], references: [id])
+  ownerId    String
+  files      File[]
+  shareLinks ShareLink[] @relation("FolderShareLinks") // Added relation name
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model File {
+  id        String   @id @default(cuid())
+  name      String
+  size      Int
+  folderId  String
+  folder    Folder   @relation(fields: [folderId], references: [id])
+  owner     User     @relation(fields: [ownerId], references: [id])
+  ownerId   String
+  createdAt DateTime @default(now())
+}
+
+model ShareLink {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  folderId  String
+  folder    Folder   @relation(fields: [folderId], references: [id], name: "FolderShareLinks")
+  expiresAt DateTime
+  createdById String
+  createdBy User     @relation(fields: [createdById], references: [id], name: "UserShareLinks")
+  createdAt DateTime @default(now())
+}
