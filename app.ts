@@ -1,13 +1,15 @@
-const express = require("express");
-const dotenv = require("dotenv");
-const session = require("express-session");
+import express from "express";
+import dotenv from "dotenv";
+import session from "express-session";
 // import passport from "./config/auth";
-const flash = require("connect-flash");
-const prisma = require("./config/prisma");
-const { PrismaSessionStore } = require("@quixo3/prisma-session-store");
-const path = require("path");
+import flash from "connect-flash";
+import prisma from "./config/prisma";
+import { PrismaSessionStore } from "@quixo3/prisma-session-store";
+import path from "path";
 dotenv.config();
-const indexRouter = require("./routes/indexRouter");
+import indexRouter from "./routes/indexRouter";
+import dashboardRouter from "./routes/dashboardRouter";
+import passport from "./config/auth";
 
 const app = express();
 
@@ -40,8 +42,8 @@ app.use(
 );
 
 // Initialize passport
-// app.use(passport.initialize());
-// app.use(passport.session());
+app.use(passport.initialize());
+app.use(passport.session());
 
 // setup flash messages
 app.use(flash());
@@ -57,6 +59,7 @@ app.use((req: any, res: any, next: any) => {
 
 // setup routes
 app.use("/", indexRouter);
+app.use("/app", dashboardRouter);
 // catch 404 and forward to error handler
 app.use((req: any, res: any, next: any) => {
   res.status(404).render("404");

@@ -16,13 +16,14 @@ model Session {
 
 model User {
   id        String   @id @default(cuid())
-  username  String
+  username  String   @unique
   password  String
   folders   Folder[]
   files     File[]
   shareLinks ShareLink[] @relation("UserShareLinks") // Added relation name
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  profile   Profile?
 }
 
 model Folder {
@@ -59,4 +60,15 @@ model ShareLink {
   createdById String
   createdBy User     @relation(fields: [createdById], references: [id], name: "UserShareLinks")
   createdAt DateTime @default(now())
+}
+
+model Profile {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id])
+  firstName String
+  lastName  String
+  avatar    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
