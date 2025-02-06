@@ -39,7 +39,7 @@ const indexController = {
     await prisma.user
       .create({
         data: {
-          username,
+          username: username.toLowerCase(),
           password: hashedPassword,
         },
       })
