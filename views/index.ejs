@@ -1,11 +1,39 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-</head>
-<body>
-    <h1>Hello World</h1>
+    <%- include('partials/head', { title: 'Homepage' }) %>
+<body class=" w-full h-full overflow-y-auto relative">
+    <header class="bg-white w-full border-b border-gray-200 fixed top-0 z-50">
+        <div class="max-w-5xl mx-auto flex justify-between items-center px-4 py-2 pt-4">
+            <h1 class="text-2xl font-bold text-gray-900">Lion <span class="text-blue-600">Drive</span></h1>
+            <div class="flex items-center">
+                <a href="/signup" class="btn bg-blue-600 text-white rounded-lg px-4 py-2">Get Started</a>
+            </div>
+        </div>
+    </header>
+    <main class="max-w-5xl mx-auto w-full @container h-fit mt-20">
+        <div class="flex flex-col items-center justify-center h-fit">
+            <div class="flex flex-col items-center justify-center h-fit px-4 py-8">
+                <i class="bi bi-cloud-upload text-blue-600 text-7xl font-bold mb-4 mt-10"></i>
+                <h1 class="text-5xl font-bold text-center text-gray-900 mb-4">Welcome to <br>Lion <span class="text-blue-600">Drive</span></h1>
+                <a href="/login" class="btn bg-gray-900 text-xl text-white rounded-lg px-4 py-2 mt-12 mb-6">Sign in</a>
+                <p class="max-w-[360px] w-full text-zinc-900 text-center font-semibold text-2xl mb-4">Your one-stop solution for all your storage needs.</p>
+            </div>
+        </div>
+        <div class="features grid grid-cols-1 @md:grid-cols-2 gap-12 items-center justify-center h-fit px-12 py-8 mb-24">
+            <div class="feature flex flex-col items-center justify-center h-fit p-6 pb-10 bg-white rounded-2xl shadow-2xl">
+                <!-- <i class="bi bi-shield-lock text-blue-600 text-5xl font-bold mb-8 mt-8 mr-auto @md:mr-0 "></i> -->
+                <img src="/images/cloud.png" alt="All file formats supported" class="w-full aspect-[16/6] h-auto object-contain mb-8 mt-5 mr-auto @md:mr-0">
+                <h3 class="w-full text-xl text-left @md:text-center font-semibold text-gray-900 mb-8">Secure cloud storage you can trust</h3>
+                <p class="w-full text-zinc-900 font-regular text-left @md:text-center text-base">Your data is safe and secure with us. We use the latest encryption and security protocols to protect your data.</p>
+            </div>
+            <div class="feature flex flex-col items-center justify-center h-fit p-6 pb-10 bg-white rounded-2xl shadow-2xl">
+                <!-- <i class="bi bi-cloud-upload text-blue-600 text-5xl font-bold mb-8 mt-8 mr-auto @md:mr-0 "></i> -->
+                <img src="/images/file-formats.png" alt="All file formats supported" class="w-full aspect-[16/6] h-auto object-contain mb-8 mt-5 mr-auto @md:mr-0">
+                <h3 class="w-full text-xl text-left @md:text-center font-semibold text-gray-900 mb-8">Easily access your files anywhere</h3>
+                <p class="w-full text-zinc-900 font-regular text-left @md:text-center text-base">You can access your files from anywhere on any device. You can also access your files from any device.</p>
+            </div>
+        </div>
+    </main>
+    <%- include('partials/footer') %>
 </body>
 </html>
