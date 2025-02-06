@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+    <%- include('../partials/head', { title: 'Signup' }) %>
+<body class=" w-full h-full overflow-y-auto relative">
+    <header class="bg-white w-full border-b border-gray-200 fixed top-0 z-50">
+        <div class="max-w-5xl mx-auto flex justify-start items-center px-4 py-2 pt-4">
+            <a href="/" class="text-2xl font-bold text-gray-900">Lion <span class="text-blue-600">Drive</span></a>
+        </div>
+    </header>
+    <main class="max-w-5xl mx-auto w-full @container h-fit mt-20">
+        <div class="flex flex-col items-center justify-center h-fit">
+            <div class="flex flex-col items-center justify-center h-fit px-4 py-8">
+                <i class="bi bi-cloud-upload text-blue-600 text-7xl font-bold mb-4 mt-12"></i>
+                <h1 class="text-4xl font-bold text-center text-gray-900 mb-4">Sign up to Lion <span class="text-blue-600">Drive</span></h1>
+                <p class="w-full max-w-[400px]  text-zinc-900 font-regular text-center text-base">Get started with Lion Drive. It's free and easy to use.</p>
+            </div>
+        </div>
+        <!-- Alert -->
+        <% if (flash.error) { %>
+            <div class="max-w-xs mx-auto flex flex-col gap-12 items-center justify-center h-fit bg-red-100 px-4 py-2">
+                <p class="text-red-700 text-center text-sm font-regular"> <%= flash.error %> </p>
+            </div>
+        <% } %>
+        <% if (flash.success) { %>
+            <div class="max-w-xs mx-auto flex flex-col gap-12 items-center justify-center h-fit bg-green-100 px-4 py-2">
+                <p class="text-green-700 text-center text-sm font-regular"> <%= flash.success %> </p>
+            </div>
+        <% } %>
+
+
+        <!-- Signup Form -->
+        <div class=" flex flex-col gap-12 items-center justify-center h-fit px-4 py-8 mb-24">
+            <form action="/signup" method="post" class="flex flex-col gap-4 items-center justify-center h-fit w-full max-w-md">
+                <input type="text" name="username" placeholder="Username" class="w-full p-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent">
+                <input type="password" name="password" placeholder="Password" class="w-full p-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent">
+                <input type="password" name="confirmPassword" placeholder="Confirm Password" class="w-full p-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent">
+                <button type="submit" class="w-full p-2 rounded-lg bg-blue-600 text-white">Sign up</button>
+            </form>
+            <p class="text-zinc-900 font-regular text-center text-base">Already have an account? <a href="/login" class="text-blue-600 font-semibold">Login</a></p> 
+        </div>
+    </main>
+    <%- include('../partials/footer') %>
+</body>
+</html>

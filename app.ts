@@ -7,6 +7,7 @@ const prisma = require("./config/prisma");
 const { PrismaSessionStore } = require("@quixo3/prisma-session-store");
 const path = require("path");
 dotenv.config();
+const indexRouter = require("./routes/indexRouter");
 
 const app = express();
 
@@ -55,8 +56,18 @@ app.use((req: any, res: any, next: any) => {
 });
 
 // setup routes
-app.get("/", (req: any, res: any) => {
-  res.render("index");
+app.use("/", indexRouter);
+// catch 404 and forward to error handler
+app.use((req: any, res: any, next: any) => {
+  res.status(404).render("404");
+});
+
+// error handler
+app.use((err: any, req: any, res: any, next: any) => {
+  res.locals.message = err.message;
+  res.locals.error = req.app.get("env") === "development" ? err : {};
+  res.status(err.status || 500);
+  res.render("error");
 });
 
 // start server
