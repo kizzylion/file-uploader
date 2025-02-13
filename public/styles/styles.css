@@ -15,11 +15,17 @@ body {
   font-size: 16px;
   margin: 0;
   padding: 0;
-  overflow: hidden;
+  overflow: hidden !important;
+  overflow-y: auto !important;
   max-height: 100vh !important;
   max-height: 100dvh !important;
+  min-height: 100dvh !important;
   display: flex;
   flex-direction: column;
+}
+
+main {
+  flex: 1;
 }
 
 h1,
@@ -52,10 +58,6 @@ li {
 a {
   text-decoration: none;
   color: inherit;
-}
-
-div {
-  position: relative !important;
 }
 
 dialog {

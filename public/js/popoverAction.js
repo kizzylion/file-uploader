@@ -9,8 +9,12 @@ function toggleMenu(id) {
 
 // Optional: Hide menu when an item is clicked
 document.querySelectorAll(".menu-item").forEach((item) => {
-  item.addEventListener("click", () => {
-    document.getElementById("file-1-menu").close();
+  item.addEventListener("click", (event) => {
+    // get the parent menu from the event
+    const parentMenu = event.target.closest(".popover");
+    if (parentMenu) {
+      parentMenu.close();
+    }
   });
 });
 
