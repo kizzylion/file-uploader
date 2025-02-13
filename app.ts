@@ -33,6 +33,9 @@ app.use(
     secret: process.env.SESSION_SECRET!,
     resave: false,
     saveUninitialized: false,
+    cookie: {
+      maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+    },
     store: new PrismaSessionStore(prisma, {
       checkPeriod: 2 * 60 * 1000, // 2 minutes
       dbRecordIdIsSessionId: true,
