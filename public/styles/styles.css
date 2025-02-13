@@ -54,6 +54,10 @@ a {
   color: inherit;
 }
 
+div {
+  position: relative !important;
+}
+
 dialog {
   --duration: 150ms;
   --start-opacity: 0.5;

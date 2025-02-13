@@ -1,23 +1,30 @@
 function toggleMenu(id) {
   const menu = document.getElementById(id);
-  // Toggle display; alternatively, you could add/remove a class
-  if (menu.style.display === "block") {
-    menu.style.display = "none";
+  if (menu.open) {
+    menu.close();
   } else {
-    menu.style.display = "block";
+    menu.show();
   }
 }
 
 // Optional: Hide menu when an item is clicked
 document.querySelectorAll(".menu-item").forEach((item) => {
   item.addEventListener("click", () => {
-    document.getElementById("cardMenu").style.display = "none";
+    document.getElementById("file-1-menu").close();
   });
 });
 
+// close menu when click outside
 document.addEventListener("click", (event) => {
-  if (!event.target.closest(".file-card-action-dropdown-menu")) {
-    document.getElementById("file-card-action-dropdown-menu").style.display =
-      "none";
-  }
+  const popovers = document.querySelectorAll(".popover");
+  const popoverTriggers = document.querySelectorAll(".popover-trigger");
+  popovers.forEach((popover, index) => {
+    if (
+      !popover.contains(event.target) &&
+      popover.open &&
+      !popoverTriggers[index].contains(event.target)
+    ) {
+      popover.close();
+    }
+  });
 });
