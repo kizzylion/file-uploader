@@ -12,28 +12,32 @@
         </div>
     </header>
     <main class="relative max-w-5xl min-h-full flex flex-col mx-auto w-full mt-16">
+        <% if (folders.length > 0) { %>
         <section id="folder-section" class="@container flex flex-col items-center justify-center h-fit px-4 py-4">
             <div class="content grid grid-cols-1 @xs:grid-cols-2 @lg:grid-cols-3  @2xl:grid-cols-4 @4xl:grid-cols-5 w-full gap-4">
+                <% folders.forEach((folder) => { %>
                 <div class="folder-card-action-dropdown relative flex flex-col items-center justify-center h-fit">
-                    <a href="/folder/1" class="folder-card bg-white rounded-lg p-2 w-full h-fit flex justify-between items-start border border-gray-200 shadow-xs gap-2 hover:bg-gray-100">
+                    <a href="/folder/<%= folder.id %>" class="folder-card bg-white rounded-lg p-2 w-full h-fit flex justify-between items-start border border-gray-200 shadow-xs gap-2 hover:bg-gray-100">
                         <div class="w-full folder-content flex flex-col items-start justify-start gap-2">
                             <div class="icon flex items-center justify-center bg-blue-50 rounded-full p-2 size-10">
                                 <i class="bi bi-folder text-blue-600 text-2xl"></i>
                             </div>
-                            <h3 class="w-full text-gray-900 text-base font-semibold line-clamp-1">My Files sdflhsd fhkdhsfdklsf</h3>
-                            <p class="w-full text-gray-600 text-xs">10 files</p>
+                            <h3 class="w-full text-gray-900 text-base font-semibold line-clamp-1"><%= folder.name %></h3>
+                            <p class="w-full text-gray-600 text-xs"><%= folder.files.length %> files</p>
                         </div>
                         <button id="folder-card-action-dropdown-trigger" class="text-gray-900 w-fit">
                             <i class="bi bi-three-dots-vertical"></i>
                         </button>
                     </a>
                     <div class="hidden w-max absolute top-10 right-2 flex flex-col items-center text-right justify-center h-fit bg-white rounded-lg border border-gray-200 shadow-sm">
-                        <a href="/folder/1" class="w-full text-gray-900 text-sm font-medium line-clamp-1 px-3 py-2 hover:bg-gray-100 border-b border-gray-200">view detail</a>
-                        <a href="/folder/1" class="w-full text-gray-900 text-sm font-medium line-clamp-1 px-3 py-2 hover:bg-gray-100">Delete</a>
+                        <a href="/folder/<%= folder.id %>" class="w-full text-gray-900 text-sm font-medium line-clamp-1 px-3 py-2 hover:bg-gray-100 border-b border-gray-200">view detail</a>
+                        <a href="/folder/<%= folder.id %>" class="w-full text-gray-900 text-sm font-medium line-clamp-1 px-3 py-2 hover:bg-gray-100">Delete</a>
                     </div>
                 </div>
+                <% }) %>
             </div>
         </section>
+        <% } %>
         <section class="file-section @container/files w-full flex flex-col items-center justify-center h-fit px-4 py-4">
             <header class="w-full flex flex-row items-center justify-start gap-2 py-3 bg-[#f5f7fa]">
                 <h2 class="text-gray-700 text-base font-semibold">My files</h2>
@@ -89,14 +93,17 @@
             </dialog>
                 
         </div>
-        <dialog id="create-folder-dialog" class="max-w-md w-full h-fit bg-white rounded-lg p-6 shadow-lg">
-            <h2 class="text-gray-900 text-base font-semibold mb-4 mt-2">Create new folder</h2>
-            <input type="text" id="create-folder-name" class="w-full p-2 rounded-lg border border-gray-200" placeholder="Folder name">
-            <div class="w-full flex flex-row items-center justify-end gap-4">
-                <button id="create-folder-dialog-close" onclick="closeDialogue('create-folder-dialog')" class="btn text-red-600 font-semibold mt-4">Cancel</button>
-                <!-- The Create button inside the dialog retains its ID -->
-                <button id="create-folder-button" class="btn text-blue-600 font-semibold mt-4">Create</button>
-            </div>
+        
+        <dialog id="create-folder-dialog" class="absolute  max-w-md w-full h-fit bg-white rounded-lg p-6 shadow-lg">
+            <form action="/app/folder" method="post" class="w-full h-fit ">
+                <h2 class="text-gray-900 text-base font-semibold mb-4 mt-2">Create new folder</h2>
+                <input type="text" name="folderName" id="create-folder-name" class="w-full p-2 rounded-lg border border-gray-200" placeholder="Folder name">
+                <div class="w-full flex flex-row items-center justify-end gap-4">
+                    <button id="create-folder-dialog-close" type="button" onclick="closeDialogue('create-folder-dialog')" class="btn text-red-600 font-semibold mt-4">Cancel</button>
+                    <!-- The Create button inside the dialog retains its ID -->
+                    <button id="create-folder-button" type="submit" class="btn text-blue-600 font-semibold mt-4">Create</button>
+                </div>
+            </form>
         </dialog>
     </main>
     <%- include('partials/footer') %>
