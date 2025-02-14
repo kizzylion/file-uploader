@@ -1,20 +1,82 @@
 const { validationResult } = require("express-validator");
 import prisma from "../config/prisma";
 
+// function to get all the recursive parent folders for breadcrumb
+interface Folder {
+  id: string;
+  name: string;
+  parentFolderId: string | null;
+}
+
+async function getRecursiveParentFolders(folderId: string): Promise<Folder[]> {
+  const folder = await prisma.folder.findUnique({
+    where: {
+      id: folderId,
+    },
+  });
+  if (folder?.parentFolderId) {
+    return [
+      ...(await getRecursiveParentFolders(folder.parentFolderId)),
+      folder,
+    ];
+  }
+  return [folder as Folder];
+}
+
 const dashboardController = {
   getDashboardPage: async (req: any, res: any) => {
     const folders = await prisma.folder.findMany({
       where: {
         ownerId: req.user.id,
+        parentFolderId: null,
+      },
+      orderBy: {
+        createdAt: "desc",
       },
       include: {
         files: true,
-        children: true,
+        children: {
+          orderBy: {
+            createdAt: "desc",
+          },
+        },
       },
     });
     console.log(folders);
     res.render("dashboard", { folders });
   },
+
+  getFolderPage: async (req: any, res: any) => {
+    const folderId = req.params.folderId;
+    const folder = await prisma.folder.findUnique({
+      where: {
+        id: folderId,
+      },
+      include: {
+        files: true,
+        children: {
+          orderBy: {
+            createdAt: "desc",
+          },
+          include: {
+            files: true,
+            children: {
+              orderBy: {
+                createdAt: "desc",
+              },
+            },
+            parentFolder: true,
+          },
+        },
+        parentFolder: true,
+      },
+    });
+    const parentFolders = await getRecursiveParentFolders(folderId);
+    console.log("parentFolders", parentFolders);
+    console.log("folder", folder);
+    res.render("folderPage", { folder, parentFolders });
+  },
+
   createFolder: async (req: any, res: any) => {
     const error = validationResult(req);
     if (!error.isEmpty()) {

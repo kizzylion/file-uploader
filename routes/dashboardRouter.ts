@@ -13,10 +13,12 @@ routes.use((req: any, res: any, next: any) => {
 });
 
 routes.get("/", dashboardController.getDashboardPage);
+
 routes.post(
   "/folder",
   [body("folderName").notEmpty().withMessage("Folder name is required")],
   dashboardController.createFolder
 );
+routes.get("/folder/:folderId", dashboardController.getFolderPage);
 
 export default routes;
