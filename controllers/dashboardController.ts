@@ -134,6 +134,14 @@ const dashboardController = {
       res.status(500).json({ error: "Failed to create folder" });
     }
   },
+
+  uploadFile: async (req: any, res: any) => {
+    if (!req.files) {
+      return res.status(400).json({ error: "No files uploaded" });
+    }
+    console.log(req.files);
+    res.status(200).json({ message: "Files uploaded successfully" });
+  },
 };
 
 export default dashboardController;

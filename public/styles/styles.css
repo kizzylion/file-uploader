@@ -111,3 +111,31 @@ dialog[open]::backdrop {
     opacity: 0;
   }
 }
+
+#upload-file-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px;
+  margin-top: 5px;
+  background: #fff;
+  border-radius: 5px;
+  border: 1px solid #ddd;
+  font-size: 14px;
+  color: #333;
+  width: 100%;
+}
+
+/* Remove Button */
+#upload-file-list li button {
+  background: transparent;
+  color: #dc3545;
+  border: none;
+  padding: 4px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+#upload-file-list li button:hover {
+  color: #c82333;
+}
