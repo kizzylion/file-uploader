@@ -43,9 +43,11 @@ model Folder {
 model File {
   id        String   @id @default(cuid())
   name      String
+  url       String
   size      Int
-  folderId  String
-  folder    Folder   @relation(fields: [folderId], references: [id])
+  type      String
+  folderId  String?   
+  folder    Folder?   @relation(fields: [folderId], references: [id])
   owner     User     @relation(fields: [ownerId], references: [id])
   ownerId   String
   createdAt DateTime @default(now())

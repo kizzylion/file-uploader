@@ -1,5 +1,8 @@
 const { validationResult } = require("express-validator");
 import prisma from "../config/prisma";
+import fs from "fs";
+import path from "path";
+import cloudinary from "../config/cloudinary";
 
 // function to get all the recursive parent folders for breadcrumb
 interface Folder {
@@ -61,6 +64,21 @@ async function deleteFolderRecursively(folderId: string) {
   });
 }
 
+function uploadToCloudinary(buffer: Buffer) {
+  return new Promise((resolve, reject) => {
+    const uploadStream = cloudinary.uploader.upload_stream(
+      { resource_type: "auto" },
+      (error, result) => {
+        if (error) {
+          reject(error);
+        }
+        resolve(result);
+      }
+    );
+    uploadStream.end(buffer);
+  });
+}
+
 const dashboardController = {
   getDashboardPage: async (req: any, res: any) => {
     const folders = await prisma.folder.findMany({
@@ -80,7 +98,11 @@ const dashboardController = {
         },
       },
     });
-    res.render("dashboard", { folders });
+
+    // for now lets get all file from the upload folder
+    const files = fs.readdirSync(path.join(__dirname, "..", "uploads"));
+    console.log("files", files);
+    res.render("dashboard", { folders, files });
   },
 
   getFolderPage: async (req: any, res: any) => {
@@ -174,18 +196,69 @@ const dashboardController = {
       req.flash("error", error.array()[0].msg);
       return res.redirect("/app");
     }
-    if (!req.files) {
-      return res.status(400).json({ error: "No files uploaded" });
+
+    try {
+      if (!req.files) {
+        return res.status(400).json({ error: "No files uploaded" });
+      }
+      const parentFolderId = req.body.parentFolderId;
+      const userId = req.user.id;
+
+      const files = req.files;
+      console.log("parentFolderId", parentFolderId);
+      console.log("files", files);
+
+      // upload all files to cloudinary
+      const uploadedPromises = files.map((file: any) =>
+        uploadToCloudinary(file.buffer)
+      );
+
+      const cloudinaryResults = await Promise.all(uploadedPromises);
+
+      console.log("cloudinaryResults", cloudinaryResults);
+
+      if (parentFolderId === "") {
+        // create file in the database
+        const fileRecords = cloudinaryResults.map(
+          (result: any, index: number) => ({
+            name: files[index].originalname,
+            url: result.secure_url,
+            size: files[index].size,
+            type: files[index].mimetype,
+            ownerId: userId,
+          })
+        );
+
+        await prisma.file.createMany({
+          data: fileRecords,
+        });
+      } else {
+        // create file in the database
+        const fileRecords = cloudinaryResults.map(
+          (result: any, index: number) => ({
+            name: files[index].originalname,
+            url: result.secure_url,
+            size: files[index].size,
+            type: files[index].mimetype,
+            ownerId: userId,
+            folderId: parentFolderId,
+          })
+        );
+        await prisma.file.createMany({
+          data: fileRecords,
+        });
+      }
+
+      req.flash("success", "Files uploaded successfully");
+      if (parentFolderId) {
+        res.redirect(`/app/folder/${parentFolderId}`);
+      } else {
+        res.redirect("/app");
+      }
+    } catch (error) {
+      console.log("error", error);
+      res.status(500).json({ error: "Failed to upload files" });
     }
-    const parentFolderId =
-      req.body.parentFolderId || req.params.folderId || null;
-    const userId = req.user.id;
-
-    const files = req.files;
-    console.log("parentFolderId", parentFolderId);
-    console.log("files", files);
-
-    res.status(200).json({ message: "Files uploaded successfully" });
   },
   // delete folder, check if the folder is empty, if not, all the files in the folder will be deleted
   deleteFolder: async (req: any, res: any) => {

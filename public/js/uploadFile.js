@@ -3,8 +3,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const fileInput = document.getElementById("file");
   const fileList = document.getElementById("upload-file-list");
   const uploadForm = document.getElementById("uploadForm");
-  const parentFolderId =
-    uploadForm.querySelector("input[name='parentFolderId']").value || null;
+  const parentFolderId = uploadForm.querySelector(
+    "input[name='parentFolderId']"
+  ).value;
   let files = [];
   const maxFileSize = 5 * 1024 * 1024; // 5MB
   const maxFileCount = 5;

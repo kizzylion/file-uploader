@@ -1,20 +1,16 @@
 import multer from "multer";
 
-// const storage = multer.memoryStorage({
-//   filename: (req, file, cb) => {
+const storage = multer.memoryStorage();
+
+// Storage for file upload
+// const storage = multer.diskStorage({
+//   destination: (req: any, file: any, cb: any) => {
+//     cb(null, "uploads/");
+//   },
+//   filename: (req: any, file: any, cb: any) => {
 //     cb(null, Date.now() + "-" + file.originalname);
 //   },
 // });
-
-// Storage for file upload
-const storage = multer.diskStorage({
-  destination: (req: any, file: any, cb: any) => {
-    cb(null, "uploads/");
-  },
-  filename: (req: any, file: any, cb: any) => {
-    cb(null, Date.now() + "-" + file.originalname);
-  },
-});
 
 // File filter for Allowed file types (image, pdf, doc, etc.)
 const fileFilter = (req: any, file: any, cb: any) => {
@@ -50,7 +46,7 @@ const upload = multer({
   fileFilter: fileFilter,
   limits: {
     fileSize: 1024 * 1024 * 5, // 5MB
-    files: 5,
+    files: 5, // 5 files
   },
 });
 
