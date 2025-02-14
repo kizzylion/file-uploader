@@ -21,6 +21,7 @@ routes.post(
   dashboardController.createFolder
 );
 
+// upload files
 routes.post("/upload", upload.array("file"), dashboardController.uploadFile);
 
 routes.get("/folder/:folderId", dashboardController.getFolderPage);

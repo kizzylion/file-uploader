@@ -42,7 +42,6 @@ const dashboardController = {
         },
       },
     });
-    console.log(folders);
     res.render("dashboard", { folders });
   },
 
@@ -72,8 +71,6 @@ const dashboardController = {
       },
     });
     const parentFolders = await getRecursiveParentFolders(folderId);
-    console.log("parentFolders", parentFolders);
-    console.log("folder", folder);
     res.render("folderPage", { folder, parentFolders });
   },
 
@@ -97,7 +94,6 @@ const dashboardController = {
             ownerId: userId,
           },
         });
-        console.log(folder);
         req.flash("success", "Folder created successfully");
         return res.redirect("/app");
       }
@@ -125,10 +121,9 @@ const dashboardController = {
           ownerId: userId,
         },
       });
-      console.log(folder);
 
       req.flash("success", "Folder created successfully");
-      return res.redirect("/app");
+      return res.redirect(`/app/folder/${folder.id}`);
     } catch (error) {
       console.log(error);
       res.status(500).json({ error: "Failed to create folder" });
@@ -136,10 +131,22 @@ const dashboardController = {
   },
 
   uploadFile: async (req: any, res: any) => {
+    const error = validationResult(req);
+    if (!error.isEmpty()) {
+      req.flash("error", error.array()[0].msg);
+      return res.redirect("/app");
+    }
     if (!req.files) {
       return res.status(400).json({ error: "No files uploaded" });
     }
-    console.log(req.files);
+    const parentFolderId =
+      req.body.parentFolderId || req.params.folderId || null;
+    const userId = req.user.id;
+
+    const files = req.files;
+    console.log("parentFolderId", parentFolderId);
+    console.log("files", files);
+
     res.status(200).json({ message: "Files uploaded successfully" });
   },
 };

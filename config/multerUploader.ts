@@ -22,6 +22,14 @@ const fileFilter = (req: any, file: any, cb: any) => {
     "image/jpeg",
     "image/png",
     "image/jpg",
+    "image/gif",
+    "image/webp",
+    "image/svg+xml",
+    "image/tiff",
+    "image/bmp",
+    "image/ico",
+    "image/heic",
+    "image/heif",
     "application/pdf",
     "application/msword",
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
@@ -42,6 +50,7 @@ const upload = multer({
   fileFilter: fileFilter,
   limits: {
     fileSize: 1024 * 1024 * 5, // 5MB
+    files: 5,
   },
 });
 

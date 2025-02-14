@@ -3,8 +3,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const fileInput = document.getElementById("file");
   const fileList = document.getElementById("upload-file-list");
   const uploadForm = document.getElementById("uploadForm");
-
+  const parentFolderId =
+    uploadForm.querySelector("input[name='parentFolderId']").value || null;
   let files = [];
+  const maxFileSize = 5 * 1024 * 1024; // 5MB
+  const maxFileCount = 5;
   // drag and drop functionality
   dropzone.addEventListener("dragover", (e) => {
     e.preventDefault();
@@ -32,6 +35,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function handleFiles(selectedFiles) {
     [...selectedFiles].forEach((file) => {
+      if (file.size > maxFileSize) {
+        alert("File size exceeds the maximum limit of 5MB.");
+        return;
+      }
+      if (files.length >= maxFileCount) {
+        alert("You can only upload up to 5 files.");
+        return;
+      }
       files.push(file);
       displayFile(file);
     });
@@ -92,6 +103,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const formData = new FormData();
     files.forEach((file) => formData.append("file", file));
+    formData.append("parentFolderId", parentFolderId);
 
     const xhr = new XMLHttpRequest();
     xhr.open("POST", "/app/upload", true);
