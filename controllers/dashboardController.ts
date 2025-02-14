@@ -6,6 +6,9 @@ interface Folder {
   id: string;
   name: string;
   parentFolderId: string | null;
+  children: Folder[];
+  files: File[];
+  parentFolder: Folder | null;
 }
 
 async function getRecursiveParentFolders(folderId: string): Promise<Folder[]> {
@@ -17,10 +20,45 @@ async function getRecursiveParentFolders(folderId: string): Promise<Folder[]> {
   if (folder?.parentFolderId) {
     return [
       ...(await getRecursiveParentFolders(folder.parentFolderId)),
-      folder,
+      folder as unknown as Folder,
     ];
   }
-  return [folder as Folder];
+  return [folder as unknown as Folder];
+}
+
+async function deleteFolderRecursively(folderId: string) {
+  const folder = await prisma.folder.findUnique({
+    where: { id: folderId },
+    include: {
+      children: {
+        include: {
+          files: true,
+          children: {
+            include: {
+              files: true,
+            },
+          },
+        },
+      },
+      files: true,
+    },
+  });
+
+  if (folder?.children && folder.children.length > 0) {
+    for (const child of folder.children) {
+      await deleteFolderRecursively(child.id);
+    }
+  }
+  if (folder?.files && folder.files.length > 0) {
+    for (const file of folder.files) {
+      await prisma.file.delete({
+        where: { id: file.id },
+      });
+    }
+  }
+  await prisma.folder.delete({
+    where: { id: folderId },
+  });
 }
 
 const dashboardController = {
@@ -148,6 +186,36 @@ const dashboardController = {
     console.log("files", files);
 
     res.status(200).json({ message: "Files uploaded successfully" });
+  },
+  // delete folder, check if the folder is empty, if not, all the files in the folder will be deleted
+  deleteFolder: async (req: any, res: any) => {
+    const folderId = req.params.folderId;
+    const userId = req.user.id;
+
+    const folder = await prisma.folder.findUnique({
+      where: { id: folderId, ownerId: userId },
+      include: {
+        files: true,
+        children: true,
+      },
+    });
+
+    if (!folder) {
+      req.flash("error", "Folder not found");
+      return res.redirect("/app");
+    }
+
+    if (folder.children.length > 0) {
+      // recursively delete all the files in the folder
+      await deleteFolderRecursively(folderId);
+    } else {
+      await prisma.folder.delete({
+        where: { id: folderId, ownerId: userId },
+      });
+    }
+
+    req.flash("success", "Folder deleted successfully");
+    res.redirect("/app");
   },
 };
 
