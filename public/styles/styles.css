@@ -139,3 +139,63 @@ dialog[open]::backdrop {
 #upload-file-list li button:hover {
   color: #c82333;
 }
+
+/* Progress Bar Styles */
+.progress-container {
+  max-width: 28px;
+  width: 100%;
+  height: 5px;
+  background-color: #ddd;
+  border-radius: 3px;
+  margin-top: 5px;
+}
+
+.progress-bar {
+  height: 100%;
+  width: 0%;
+  border-radius: 3px;
+  background-color: #28a745;
+  transition: width 0.3s ease;
+}
+
+.progress-bar.completed {
+  position: relative;
+  background-color: #28a745;
+  width: 100%;
+  border-radius: 3px;
+}
+
+.progress-bar.completed::after {
+  /* add a checkmark icon */
+  content: "✓";
+  position: absolute;
+  right: -14px;
+  top: 0;
+  color: #28a745;
+  text-align: center;
+  font-size: 1em;
+  font-weight: bold;
+}
+.progress-bar.uploading {
+  background-color: #007bff;
+}
+
+.progress-bar.pending {
+  background-color: #ffc107;
+  width: 0%;
+}
+
+.progress-bar.error {
+  background-color: #dc3545;
+  width: 0%;
+}
+
+/* when status is pending, hide the progress bar */
+.status.pending ~ .progress-container {
+  width: 0px !important;
+}
+
+/* when status is completed, hide the delete button */
+.status.completed ~ .remove-file-btn {
+  display: none !important;
+}
