@@ -100,7 +100,17 @@ const dashboardController = {
     });
 
     // for now lets get all file from the upload folder
-    const files = fs.readdirSync(path.join(__dirname, "..", "uploads"));
+    // const files = fs.readdirSync(path.join(__dirname, "..", "uploads"));
+
+    const files = await prisma.file.findMany({
+      where: {
+        ownerId: req.user.id,
+        folderId: null,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
     console.log("files", files);
     res.render("dashboard", { folders, files });
   },
