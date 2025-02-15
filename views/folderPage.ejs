@@ -66,38 +66,53 @@
         <% } %>
         <section class="file-section @container/files w-full flex flex-col items-center justify-center h-fit px-4 py-4">
             <header class="w-full flex flex-row items-center justify-start gap-2 py-3 bg-[#f5f7fa]">
-                <h2 class="text-gray-700 text-base font-semibold">My files</h2>
+                <h2 class="text-gray-700 text-base font-semibold">My files <span class="text-gray-500 text-xs font-normal">(<%= folder.files.length %>)</span></h2>
             </header>
             <div class="content grid grid-cols-1 @xs:grid-cols-2 @lg:grid-cols-3 @2xl:grid-cols-4 @4xl:grid-cols-5 w-full gap-4">
-                <div class="file-card-action-dropdown relative flex flex-col items-end h-fit bg-white rounded-lg p-2 flex flex-col items-start justify-start border border-gray-200 shadow-xs gap-2 hover:bg-gray-100">
-                    <a href="/app/file/1" class="file-image  w-full h-fit ">
-                        <div class="w-full file-content flex flex-col items-start justify-start gap-2">
-                            <div class="icon flex items-center justify-center size-fit mx-auto mt-4">
-                                <i class="bi bi-file-earmark-text text-blue-600 text-4xl"></i>
+                <% folder.files.forEach((file) => { %>
+                    <div class="file-card-action-dropdown relative flex flex-col items-end h-fit bg-white rounded-lg p-2 flex flex-col items-start justify-start border border-gray-200 shadow-xs gap-2 hover:bg-gray-100">
+                        <a href="<%= file.url %>" class="file-image  w-full h-fit ">
+                            <div class="w-full file-content flex flex-col items-start justify-start gap-2">
+                                <div class="icon flex items-center justify-center size-fit mx-auto mt-4">
+                                    <% if (file.type.includes('image')) { %>
+                                        <img src="<%= file.url %>" alt="<%= file.name %>" class="w-full h-auto aspect-[1/1] object-cover object-center">
+                                    <% } else if (file.type.includes('pdf')) { %>
+                                        <i class="bi bi-file-earmark-pdf text-red-600 text-4xl"></i>
+                                    <% } else if (file.type.includes('doc')) { %>
+                                        <i class="bi bi-file-earmark-word text-blue-600 text-4xl"></i>
+                                    <% } else if (file.type.includes('xls')) { %>
+                                        <i class="bi bi-file-earmark-excel text-green-600 text-4xl"></i>
+                                    <% } else if (file.type.includes('ppt')) { %>
+                                        <i class="bi bi-file-earmark-ppt text-yellow-600 text-4xl"></i>
+                                    <% } %>
+                                </div>
+                            </div>
+                        </a>
+                        <div class="file-title-action relative w-full flex  h-fit  ">
+                            <a href="<%= file.url %>" class="w-full text-gray-900 text-sm font-medium line-clamp-1"><%= file.name %></a>
+                            <div class="file-action-dropdown-menu relative w-fit flex  h-fit  ">
+                                <button 
+                                    id="file-card-action-dropdown-trigger" 
+                                    onclick="toggleMenu('file-<%= file.id %>-menu')" 
+                                class="popover-trigger text-gray-900 w-fit"
+                            >
+                                <i class="bi bi-three-dots-vertical"></i>
+                                </button>
+                                <dialog 
+                                    id="file-<%= file.id %>-menu" 
+                                    role="menu" 
+                                    class="popover w-max absolute bottom-[30px] -left-[80px] text-right h-fit bg-white rounded-lg border border-gray-200 shadow-sm z-50 overflow-hidden ring-1 ring-gray-200"
+                                >
+                                    <a href="/app/download/<%= file.id %>" class="menu-item w-full text-gray-900 text-sm font-medium line-clamp-1 px-3 py-2 hover:bg-gray-100 border-b border-gray-200 transition-all duration-300 hover:cursor-pointer">
+                                        <i class="bi bi-download"></i> Download
+                                    </a>
+                                    <a href="/app/file/s<%= file.id %>" role="menuitem" class="menu-item w-full text-gray-900 text-sm font-medium line-clamp-1 px-3 py-2 hover:bg-gray-100 border-b border-gray-200 transition-all duration-300 hover:cursor-pointer">view detail</a>
+                                    <a href="/app/file/<%= file.id %>/delete" role="menuitem" class="menu-item w-full text-gray-900 text-sm font-medium line-clamp-1 px-3 py-2 hover:bg-gray-100 transition-all duration-300 hover:cursor-pointer">Delete</a>
+                                </dialog>
                             </div>
                         </div>
-                    </a>
-                    <div class="file-title-action relative w-full flex  h-fit  ">
-                        <a href="/app/file/1" class="w-full text-gray-900 text-sm font-medium line-clamp-1">My Files sdflhsd fhkdhsfdklsf</a>
-                        <div class="file-action-dropdown-menu relative w-fit flex  h-fit  ">
-                            <button 
-                                id="file-card-action-dropdown-trigger" 
-                                onclick="toggleMenu('file-1-menu')" 
-                            class="popover-trigger text-gray-900 w-fit"
-                        >
-                            <i class="bi bi-three-dots-vertical"></i>
-                            </button>
-                            <dialog 
-                                id="file-1-menu" 
-                                role="menu" 
-                                class="popover w-max absolute bottom-[30px] -left-[80px] text-right h-fit bg-white rounded-lg border border-gray-200 shadow-sm z-50 overflow-hidden ring-1 ring-gray-200"
-                            >
-                                <a href="/file/1" role="menuitem" class="menu-item w-full text-gray-900 text-sm font-medium line-clamp-1 px-3 py-2 hover:bg-gray-100 border-b border-gray-200 transition-all duration-300 hover:cursor-pointer">view detail</a>
-                                <a href="/file/1" role="menuitem" class="menu-item w-full text-gray-900 text-sm font-medium line-clamp-1 px-3 py-2 hover:bg-gray-100 transition-all duration-300 hover:cursor-pointer">Delete</a>
-                            </dialog>
-                        </div>
                     </div>
-                </div>
+                <% }) %>
             </div>
         </section>
         <section class="fixed bottom-24 w-full h-fit z-100 max-w-5xl mx-auto">
@@ -156,7 +171,7 @@
                     <button id="upload-file-dialog-close" type="button" onclick="closeDialogue('upload-file-dialog')" class="btn text-red-600 font-semibold mt-4">Cancel</button>
                     <!-- The Create button inside the dialog retains its ID -->
                     <button id="upload-file-button" type="submit" class="btn text-blue-600 font-semibold mt-4">Upload</button>
-                    <button id="upload-file-done-button" type="button" class="hidden btn bg-blue-600 text-white font-semibold mt-4">Done</button>
+                    <button id="upload-file-done-button" type="button" class="hidden btn text-blue-600 font-semibold mt-4">Done</button>
                 </div>
             </form>
         </dialog>

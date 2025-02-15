@@ -3,6 +3,7 @@ import prisma from "../config/prisma";
 import fs from "fs";
 import path from "path";
 import cloudinary from "../config/cloudinary";
+import { Readable } from "stream";
 
 // function to get all the recursive parent folders for breadcrumb
 interface Folder {
@@ -67,7 +68,7 @@ async function deleteFolderRecursively(folderId: string) {
 function uploadToCloudinary(buffer: Buffer) {
   return new Promise((resolve, reject) => {
     const uploadStream = cloudinary.uploader.upload_stream(
-      { resource_type: "auto" },
+      { resource_type: "raw" },
       (error, result) => {
         if (error) {
           reject(error);
@@ -140,6 +141,7 @@ const dashboardController = {
         parentFolder: true,
       },
     });
+
     const parentFolders = await getRecursiveParentFolders(folderId);
     res.render("folderPage", { folder, parentFolders });
   },
@@ -268,6 +270,57 @@ const dashboardController = {
     } catch (error) {
       console.log("error", error);
       res.status(500).json({ error: "Failed to upload files" });
+    }
+  },
+
+  downloadFile: async (req: any, res: any) => {
+    try {
+      const fileId = req.params.fileId;
+      const file = await prisma.file.findUnique({
+        where: { id: fileId },
+      });
+      if (!file) {
+        return res.status(404).json({ error: "File not found" });
+      }
+      // Append the parameter to the url to force download
+      const downloadUrl =
+        file?.url + "?response-content-disposition=attachment";
+
+      // using fetch to retrieve the file from cloudinary
+      const response = await fetch(downloadUrl);
+
+      if (!response.ok) {
+        return res
+          .status(500)
+          .json({ error: "Error fetching file from cloudinary" });
+      }
+
+      const contentType = response.headers.get("content-type");
+
+      if (contentType) {
+        res.setHeader("Content-Type", contentType);
+      }
+
+      const urlObj = new URL(file.url);
+      const extension = path.extname(urlObj.pathname);
+
+      // ensure the filename has the correct extension
+      const fileNameWithExtension = file.name + extension;
+
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="${fileNameWithExtension}"`
+      );
+
+      // convert the web ReadableStream to a node.js Readable stream
+      const stream = Readable.from(response.body as any);
+
+      stream.pipe(res);
+
+      // open the file in the browser
+    } catch (error) {
+      console.log("error", error);
+      res.status(500).json({ error: "Failed to download file" });
     }
   },
   // delete folder, check if the folder is empty, if not, all the files in the folder will be deleted

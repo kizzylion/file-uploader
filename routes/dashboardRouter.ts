@@ -27,4 +27,6 @@ routes.post("/upload", upload.array("file"), dashboardController.uploadFile);
 routes.get("/folder/:folderId", dashboardController.getFolderPage);
 routes.get("/folder/:folderId/delete", dashboardController.deleteFolder);
 
+routes.get("/download/:fileId", dashboardController.downloadFile);
+
 export default routes;
