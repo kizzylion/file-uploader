@@ -4,6 +4,8 @@ import fs from "fs";
 import path from "path";
 import cloudinary from "../config/cloudinary";
 import { Readable } from "stream";
+import previewUrl from "../config/cloudinaryPreviewUrl";
+import { v4 as uuidv4 } from "uuid";
 
 // function to get all the recursive parent folders for breadcrumb
 interface Folder {
@@ -31,53 +33,87 @@ async function getRecursiveParentFolders(folderId: string): Promise<Folder[]> {
 }
 
 async function deleteFolderRecursively(folderId: string) {
-  const folder = await prisma.folder.findUnique({
-    where: { id: folderId },
-    include: {
-      children: {
-        include: {
-          files: true,
-          children: {
-            include: {
-              files: true,
+  try {
+    const folder = await prisma.folder.findUnique({
+      where: { id: folderId },
+      include: {
+        children: {
+          include: {
+            files: true,
+            children: {
+              include: {
+                files: true,
+              },
             },
           },
         },
+        files: true,
       },
-      files: true,
-    },
-  });
+    });
 
-  if (folder?.children && folder.children.length > 0) {
-    for (const child of folder.children) {
-      await deleteFolderRecursively(child.id);
+    if (folder?.children && folder.children.length > 0) {
+      for (const child of folder.children) {
+        await deleteFolderRecursively(child.id);
+      }
     }
-  }
-  if (folder?.files && folder.files.length > 0) {
-    for (const file of folder.files) {
-      await prisma.file.delete({
-        where: { id: file.id },
-      });
+    if (folder?.files && folder.files.length > 0) {
+      for (const file of folder.files) {
+        if (file.publicId) {
+          await cloudinary.uploader.destroy(file.publicId);
+          await cloudinary.uploader.destroy(file.publicId, {
+            resource_type: "raw",
+          });
+        }
+        await prisma.file.delete({
+          where: { id: file.id },
+        });
+      }
     }
+    await prisma.folder.delete({
+      where: { id: folderId },
+    });
+  } catch (error) {
+    console.log(error);
   }
-  await prisma.folder.delete({
-    where: { id: folderId },
-  });
 }
 
 function uploadToCloudinary(buffer: Buffer) {
-  return new Promise((resolve, reject) => {
-    const uploadStream = cloudinary.uploader.upload_stream(
-      { resource_type: "raw" },
-      (error, result) => {
-        if (error) {
-          reject(error);
+  try {
+    return new Promise((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        { resource_type: "auto", folder: "fileuploader" },
+        (error, result) => {
+          if (error) {
+            reject(error);
+          }
+          resolve(result);
         }
-        resolve(result);
-      }
-    );
-    uploadStream.end(buffer);
-  });
+      );
+      uploadStream.end(buffer);
+    });
+  } catch (error) {
+    console.log("Upload to cloudinary error", error);
+    throw error;
+  }
+}
+function uploadToCloudinaryRaw(buffer: Buffer) {
+  try {
+    return new Promise((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        { resource_type: "raw", folder: "fileuploader" },
+        (error, result) => {
+          if (error) {
+            reject(error);
+          }
+          resolve(result);
+        }
+      );
+      uploadStream.end(buffer);
+    });
+  } catch (error) {
+    console.log("Upload to cloudinary error", error);
+    throw error;
+  }
 }
 
 const dashboardController = {
@@ -112,8 +148,16 @@ const dashboardController = {
         createdAt: "desc",
       },
     });
-    console.log("files", files);
-    res.render("dashboard", { folders, files });
+
+    let filesWithPreviewUrl = files.map((file) => {
+      return {
+        ...file,
+        previewUrl: file.type.includes("pdf") ? previewUrl(file.url) : null,
+      };
+    });
+    console.log("files", filesWithPreviewUrl);
+    let shareUrl;
+    res.render("dashboard", { folders, files: filesWithPreviewUrl, shareUrl });
   },
 
   getFolderPage: async (req: any, res: any) => {
@@ -222,7 +266,9 @@ const dashboardController = {
 
       // upload all files to cloudinary
       const uploadedPromises = files.map((file: any) =>
-        uploadToCloudinary(file.buffer)
+        file.mimetype.includes("image")
+          ? uploadToCloudinary(file.buffer)
+          : uploadToCloudinaryRaw(file.buffer)
       );
 
       const cloudinaryResults = await Promise.all(uploadedPromises);
@@ -238,6 +284,7 @@ const dashboardController = {
             size: files[index].size,
             type: files[index].mimetype,
             ownerId: userId,
+            publicId: result.public_id,
           })
         );
 
@@ -254,6 +301,7 @@ const dashboardController = {
             type: files[index].mimetype,
             ownerId: userId,
             folderId: parentFolderId,
+            publicId: result.public_id,
           })
         );
         await prisma.file.createMany({
@@ -305,8 +353,9 @@ const dashboardController = {
       const extension = path.extname(urlObj.pathname);
 
       // ensure the filename has the correct extension
-      const fileNameWithExtension = file.name + extension;
 
+      const fileNameWithExtension = file.name + extension;
+      // const fileName = file.name;
       res.setHeader(
         "Content-Disposition",
         `attachment; filename="${fileNameWithExtension}"`
@@ -341,6 +390,23 @@ const dashboardController = {
       return res.redirect("/app");
     }
 
+    folder.files.forEach(async (file) => {
+      try {
+        if (file.publicId) {
+          await cloudinary.uploader.destroy(file.publicId);
+          await cloudinary.uploader.destroy(file.publicId, {
+            resource_type: "raw",
+          });
+        }
+        await prisma.file.delete({
+          where: { id: file.id, ownerId: userId },
+        });
+      } catch (error) {
+        console.log(error);
+        return;
+      }
+    });
+
     if (folder.children.length > 0) {
       // recursively delete all the files in the folder
       await deleteFolderRecursively(folderId);
@@ -352,6 +418,79 @@ const dashboardController = {
 
     req.flash("success", "Folder deleted successfully");
     res.redirect("/app");
+  },
+
+  deleteFile: async (req: any, res: any) => {
+    try {
+      const fileId = req.params.fileId;
+      const userId = req.user.id;
+
+      const file = await prisma.file.findUnique({
+        where: { id: fileId, ownerId: userId },
+      });
+
+      if (!file) {
+        req.flash("error", "File not found");
+        return res.redirect("back");
+      }
+
+      if (file.publicId) {
+        await cloudinary.uploader.destroy(file.publicId);
+        await cloudinary.uploader.destroy(file.publicId, {
+          resource_type: "raw",
+        });
+      }
+      await prisma.file.delete({
+        where: { id: fileId, ownerId: userId },
+      });
+
+      req.flash("success", "File deleted successfully");
+      res.redirect("back");
+    } catch (error) {
+      console.log("error", error);
+      res.status(500).json({ error: "Failed to delete file" });
+    }
+  },
+  postShare: async (req: any, res: any) => {
+    console.log("Received a share request for folder:", req.params.folderId);
+    console.log("Request body:", req.body); // Inspect if the body is correct
+    try {
+      const folderId = req.params.folderId;
+      let duration = req.body.duration;
+      let expiresAt;
+
+      if (duration === "custom") {
+        const days = parseInt(req.body["customDays"] || "0");
+        if (isNaN(days)) throw new Error("Invalid custom duration");
+        expiresAt = new Date(Date.now() + days * 24 * 60 * 60 * 1000);
+      } else {
+        const hours = parseInt(duration);
+        if (isNaN(hours)) throw new Error("Invalid custom duration");
+        expiresAt = new Date(Date.now() + hours * 60 * 60 * 1000);
+      }
+
+      const shareLink = await prisma.shareLink.create({
+        data: {
+          token: uuidv4(),
+          folderId,
+          expiresAt,
+          createdById: req.user.id,
+        },
+      });
+
+      const shareUrl = `${req.protocol}://${req.get("host")}/share/${
+        shareLink.token
+      }`;
+
+      // Return JSON response
+      res.json({
+        success: true,
+        shareUrl,
+        expirationDate: expiresAt.toLocaleString(),
+      });
+    } catch (error) {
+      res.status(500).json({ error: "Error creating share link" });
+    }
   },
 };
 

@@ -28,5 +28,7 @@ routes.get("/folder/:folderId", dashboardController.getFolderPage);
 routes.get("/folder/:folderId/delete", dashboardController.deleteFolder);
 
 routes.get("/download/:fileId", dashboardController.downloadFile);
+routes.get("/file/:fileId/delete", dashboardController.deleteFile);
+routes.post("/folder/:folderId/share", dashboardController.postShare);
 
 export default routes;

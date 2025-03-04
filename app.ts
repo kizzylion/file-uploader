@@ -10,6 +10,8 @@ dotenv.config();
 import indexRouter from "./routes/indexRouter";
 import dashboardRouter from "./routes/dashboardRouter";
 import passport from "./config/auth";
+import multer from "multer";
+import cors from "cors";
 
 const app = express();
 
@@ -26,6 +28,8 @@ app.set("views", path.join(__dirname, "views"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public")));
+
+app.use(cors());
 
 // setup session middleware
 app.use(
@@ -72,6 +76,19 @@ app.use((req: any, res: any, next: any) => {
 app.use((err: any, req: any, res: any, next: any) => {
   res.locals.message = err.message;
   res.locals.error = req.app.get("env") === "development" ? err : {};
+
+  if (err instanceof multer.MulterError) {
+    req.flash("error", `Failed to upload file: ${err.message}`);
+    console.log(err);
+    return res.redirect("back");
+  }
+
+  if (err.name === "TimeoutError") {
+    req.flash("error", "Request timed out");
+    console.log(err);
+    return res.redirect("back");
+  }
+
   res.status(err.status || 500);
   console.log(err);
   res.render("error");
