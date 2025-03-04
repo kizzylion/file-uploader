@@ -17,7 +17,9 @@ interface Folder {
   parentFolder: Folder | null;
 }
 
-async function getRecursiveParentFolders(folderId: string): Promise<Folder[]> {
+export async function getRecursiveParentFolders(
+  folderId: string
+): Promise<Folder[]> {
   const folder = await prisma.folder.findUnique({
     where: {
       id: folderId,
@@ -478,7 +480,7 @@ const dashboardController = {
         },
       });
 
-      const shareUrl = `${req.protocol}://${req.get("host")}/share/${
+      const shareUrl = `${req.protocol}://${req.get("host")}/shared/${
         shareLink.token
       }`;
 

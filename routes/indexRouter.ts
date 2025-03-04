@@ -53,4 +53,7 @@ routes.post(
 
 routes.get("/logout", indexController.logout);
 
+routes.get("/shared/:token", indexController.showSharedLink);
+routes.get("/shared/:token/:folderId", indexController.showSharedLink);
+
 export default routes;

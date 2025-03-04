@@ -2,6 +2,7 @@ const { validationResult } = require("express-validator");
 import { hashPassword, comparePassword } from "../config/bcrypt";
 import prisma from "../config/prisma";
 import passport from "../config/auth";
+import { getRecursiveParentFolders } from "./dashboardController";
 
 const indexController = {
   getLandingPage: (req: any, res: any) => {
@@ -91,6 +92,80 @@ const indexController = {
       req.flash("success", "Logout successful");
       res.redirect("/");
     });
+  },
+  showSharedLink: async (req: any, res: any) => {
+    const token = req.params.token;
+    const folderId = req.params.folderId;
+    console.log(token);
+
+    const sharedLink = await prisma.shareLink.findUnique({
+      where: {
+        token: token,
+        expiresAt: { gt: new Date() },
+      },
+    });
+
+    if (sharedLink) {
+      if (!folderId) {
+        let folderId = sharedLink?.folderId;
+
+        const folder = await prisma.folder.findUnique({
+          where: {
+            id: folderId,
+          },
+          include: {
+            files: true,
+            children: {
+              orderBy: {
+                createdAt: "desc",
+              },
+              include: {
+                files: true,
+                children: {
+                  orderBy: {
+                    createdAt: "desc",
+                  },
+                },
+                parentFolder: true,
+              },
+            },
+            parentFolder: true,
+          },
+        });
+
+        const parentFolders = await getRecursiveParentFolders(folderId ?? "");
+        res.render("sharedFolderPage", { folder, parentFolders, token });
+      } else {
+        const folder = await prisma.folder.findUnique({
+          where: {
+            id: folderId,
+          },
+          include: {
+            files: true,
+            children: {
+              orderBy: {
+                createdAt: "desc",
+              },
+              include: {
+                files: true,
+                children: {
+                  orderBy: {
+                    createdAt: "desc",
+                  },
+                },
+                parentFolder: true,
+              },
+            },
+            parentFolder: true,
+          },
+        });
+
+        const parentFolders = await getRecursiveParentFolders(folderId ?? "");
+        res.render("sharedFolderPage", { folder, parentFolders, token });
+      }
+    } else {
+      res.status(404).render("404");
+    }
   },
 };
 

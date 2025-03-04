@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+    <%- include('partials/head', { title: 'App' }) %>
+<body class="w-full relative flex flex-col">
+    <header class="bg-white w-full border-b border-gray-200 fixed top-0 z-50 h-fit">
+        <div class="max-w-5xl mx-auto flex justify-between items-center px-4 py-2 pt-4">
+            <a href="/" class="text-2xl font-bold text-gray-900">Lion <span class="text-blue-600">Drive</span></a>
+            
+        </div>
+    </header>
+    <!-- sub header  with breadcrumb -->
+    <div class="max-w-5xl w-full mx-auto flex justify-start items-center px-4 py-2 pt-4 mt-16">
+        <a href="/shared/<%= token %>" class="text-gray-900 hover:text-blue-600 text-sm font-medium"><i class="bi bi-cloud-arrow-up me-1"></i>Home</a>
+        <span class="text-gray-900 text-sm font-medium mx-2">/</span>
+        <% parentFolders.forEach((parentFolder, index) => { %>
+        <a 
+            class="<%= index === parentFolders.length - 1 ? 'text-gray-500' : 'text-gray-900 hover:text-blue-600' %> text-sm font-medium">
+            <i class="bi bi-folder me-1"></i><%= parentFolder.name %>
+        </a>
+        <!-- if not the last folder, add a / -->
+        <% if (index !== parentFolders.length - 1) { %>
+        <span class="text-gray-900 text-sm font-medium mx-2">/</span>
+        <% } %>
+        <% }) %>
+    </div>
+    <main class=" max-w-5xl flex flex-col mx-auto w-full mb-10">
+        <% if (folder.children.length > 0) { %>
+        <section id="folder-section" class="@container flex flex-col items-center justify-center h-fit px-4 py-4">
+            <div class="content grid grid-cols-1 @xs:grid-cols-2 @lg:grid-cols-3  @2xl:grid-cols-4 @4xl:grid-cols-5 w-full gap-4">
+                <% folder.children.forEach((child) => { %>
+                <div class="folder-card-container relative w-full flex items-start justify-start h-fit gap-2 bg-white rounded-lg p-2 border border-gray-200 shadow-xs hover:bg-gray-100">
+                    <a href="/shared/<%= token %>/<%= child.id %>" class="folder-card w-full h-fit flex items-start gap-2 ">
+                        <div class="w-full folder-content flex flex-col items-start justify-start gap-2">
+                            <div class="icon flex items-center justify-center bg-blue-50 rounded-full p-2 size-10">
+                                <i class="bi bi-folder text-blue-600 text-2xl"></i>
+                            </div>
+                            <h3 class="w-full text-gray-900 text-base font-semibold line-clamp-1"><%= child.name %></h3>
+                            <p class="w-full text-gray-600 text-xs"><%= child.children.length + child.files.length %> <%= child.children.length + child.files.length <= 1 ? 'item' : 'items' %></p>
+                        </div>
+                    </a>
+                    
+                </div>
+                <% }) %>
+            </div>
+        </section>
+        <% } %>
+        <% if (folder.files.length > 0) { %>
+        <section class="file-section @container/files w-full flex flex-col items-center justify-center h-fit px-4 py-4">
+            <header class="w-full flex flex-row items-center justify-start gap-2 py-3 bg-[#f5f7fa]">
+                <h2 class="text-gray-700 text-base font-semibold">My files <span class="text-gray-500 text-xs font-normal">(<%= folder.files.length %>)</span></h2>
+            </header>
+            <div class="content grid grid-cols-1 @xs:grid-cols-2 @lg:grid-cols-3 @2xl:grid-cols-4 @4xl:grid-cols-5 w-full gap-4">
+                <% folder.files.forEach((file) => { %>
+                    
+                <div class="file-card-action-dropdown relative flex flex-col items-end h-fit bg-white rounded-lg p-2 flex flex-col items-start justify-start border border-gray-200 shadow-xs gap-2 hover:bg-gray-100">
+                    <a href="/shared/<%= token %>/download/<%= file.id %>" class="file-image  w-full h-fit ">
+                        <div class="w-full file-content flex flex-col items-centers justify-center gap-2 rounded-sm overflow-hidden">
+                            <% if (file.type.includes('image') && !file.type.includes('svg')) { %>
+                                <img src="<%= file.url %>" alt="<%= file.name %>" class="w-full h-auto aspect-[1/1] object-cover object-center">
+                            <% } else if (file.type.includes('svg')) { %>
+                                <div class="w-full aspect-[1/1] h-auto flex items-center justify-center">
+                                    <i class="bi bi-file-earmark-svgs text-red-600 text-4xl w-fit"></i>
+                                </div>
+                            <% } else if (file.type.includes('pdf')) { %>                                   
+                                <div class="w-full aspect-[1/1] h-auto flex items-center justify-center">
+                                    <i class="bi bi-file-earmark-pdf text-red-600 text-4xl w-fit"></i>
+                                </div>
+                            <% } else if (file.type.includes('doc')) { %>
+                                <div class="w-full aspect-[1/1] h-auto flex items-center justify-center">
+                                    <i class="bi bi-file-earmark-word text-blue-600 text-4xl w-fit"></i>
+                                </div>
+
+                            <% } else if (file.type.includes('xls')) { %>
+                                <div class="w-full aspect-[1/1] h-auto flex items-center justify-center">
+                                    <i class="bi bi-file-earmark-excel text-green-600 text-4xl w-fit"></i>
+                                </div>
+                            <% } else if (file.type.includes('ppt')) { %>
+                                <div class="w-full aspect-[1/1] h-auto flex items-center justify-center">
+                                    <i class="bi bi-file-earmark-ppt text-yellow-600 text-4xl w-fit"></i>
+                                </div>
+                            <% } %>
+                            <!-- <div class="icon flex items-center justify-center size-fit mx-auto mt-4">
+                            </div> -->
+                        </div>
+                    </a>
+                    <div class="file-title-action relative w-full flex  h-fit  ">
+                        <a href="/shared/<%= token %>/download/<%= file.id %>" class="w-full text-gray-900 text-sm font-medium line-clamp-1"><%= file.name %></a>
+                        <div class="file-action-dropdown-menu relative w-fit flex  h-fit  ">
+                            <button 
+                                id="file-card-action-dropdown-trigger" 
+                                onclick="toggleMenu('file-<%= file.id %>-menu')" 
+                            class="popover-trigger text-gray-900 w-fit"
+                        >
+                            <i class="bi bi-three-dots-vertical"></i>
+                            </button>
+                            <dialog 
+                                id="file-<%= file.id %>-menu" 
+                                role="menu" 
+                                class="popover w-max absolute bottom-[30px] -left-[80px] text-right h-fit bg-white rounded-lg border border-gray-200 shadow-sm z-50 overflow-hidden ring-1 ring-gray-200"
+                            >
+                                <a href="/shared/<%= token %>/download/<%= file.id %>" class="menu-item w-full flex gap-2 text-gray-900 text-sm font-medium line-clamp-1 px-3 py-2 hover:bg-gray-100 border-b border-gray-200 transition-all duration-300 hover:cursor-pointer">
+                                    <i class="bi bi-download"></i> Download
+                                </a>
+                                <button onclick="showDialogue('file-<%= file.id %>-info')" role="menuitem" class="menu-item w-full flex gap-2 text-gray-900 text-sm font-medium  line-clamp-1 px-3 py-2 hover:bg-gray-100 border-b border-gray-200 transition-all duration-300 hover:cursor-pointer">
+                                   <i class="bi bi-info-circle-fill"></i> Info
+                                </button>
+                                
+                            </dialog>
+                        </div>
+                    </div>
+                    <dialog id="file-<%= file.id %>-info" class=" max-w-md  w-full h-fit bg-zinc-100 rounded-lg shadow-lg z-50 ring-1 ring-gray-200">
+                        <div id="uploadForm"  class="w-full pb-4  relative h-fit items-center justify-center gap-2 overflow-hidden text-xs">
+                            <header class="flex w-full items-center px-4 py-2 border-b border-zinc-300">
+                                <!-- icon -->
+                                <% if (file.type.includes('image') && !file.type.includes('svg')) { %>
+                                    <i class="bi bi-file-earmark-image text-gray-600 texlg w-fit"></i>
+                                <% } else if (file.type.includes('svg')) { %>
+                                        <i class="bi bi-file-earmark-svgs text-red-600 text-lg w-fit"></i>
+                                <% } else if (file.type.includes('pdf')) { %>                                   
+                                        <i class="bi bi-file-earmark-pdf text-red-600 text-lg w-fit"></i>
+                                <% } else if (file.type.includes('doc')) { %>
+                                        <i class="bi bi-file-earmark-word text-blue-600 text-lg w-fit"></i>
+                                <% } else if (file.type.includes('xls')) { %>
+                                        <i class="bi bi-file-earmark-excel text-green-600 text-lg w-fit"></i>
+                                <% } else if (file.type.includes('ppt')) { %>
+                                        <i class="bi bi-file-earmark-ppt text-yellow-600 text-lg w-fit"></i>
+                                <% } %>
+                                <h5 class="text-lg w-full ml-1 mr-1 line-clamp-1 align-middle"><%= file.name %></h5>
+                                <button onclick="closeDialogue('file-<%= file.id %>-info')" class="size-4 ml-auto mr-0 grid place-content-center text-center text-xs rounded-full p-1 bg-red-500 text-white">x</button>
+                            </header>
+                            <table class="table-auto w-full border-collapse">
+                                <tbody>
+                                    <tr class="">
+                                        <td class="text-left px-4 py-2 font-semibold">Name:</td>
+                                        <td class="px-4 py-2"><%= file.name %></td>
+                                    </tr>
+                                    <tr class="">
+                                        <td class="text-left px-4 py-2 font-semibold">Type:</td>
+                                        <td class="px-4 py-2">
+                                            <%= file.type.includes('pdf') ? 'PDF' : 
+                                                file.type.includes('doc') ? 'DOC' : 
+                                                file.type.includes('svg') ? 'SVG' : 
+                                                file.type.includes('xls') ? 'XLS' : 
+                                                file.type.includes('ppt') ? 'PPT' : file.type %>
+                                        </td>
+                                    </tr>
+                                    <tr class="">
+                                        <td class="text-left px-4 py-2 font-semibold">Location:</td>
+                                        <td class="px-4 py-2">Home <span class="text-[6px] align-middle">►</span> <% parentFolders.forEach((parentFolder, index) => { %>
+                                            <%= parentFolder.name  %>
+                                            <% if (index !== parentFolders.length - 1) { %>
+                                                 <span class="text-[6px] align-middle">►</span>
+                                                <% } %>
+                                            <% }) %>
+                                        </td>
+                                    </tr>
+                                    <tr class="">
+                                        <td class="text-left px-4 py-2 font-semibold">Size:</td>
+                                        <td class="px-4 py-2">
+                                            <%= file.size %> bytes 
+                                            (<%= file.size < 1000000 ? (file.size / 1000).toFixed(2) + " KB" : (file.size / 1000000).toFixed(2) + " MB" %>)
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-left px-4 py-2 font-semibold">Created:</td>
+                                        <td class="px-4 py-2">
+                                            <% let systemTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone; %>
+                                            <%= file.createdAt.toLocaleString('en-US', { 
+                                                month: 'long', 
+                                                year: 'numeric', 
+                                                day: 'numeric', 
+                                                hour: '2-digit', 
+                                                minute: '2-digit', 
+                                                second: '2-digit', 
+                                                timeZone: systemTimeZone,
+                                                timeZoneName: 'short' 
+                                            }) %>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>                            
+                        </div>
+                    </dialog>
+                </div>
+                <% }) %>
+            </div>
+        </section>
+        <% } %>
+        <%if(folder.children.length == 0 && folder.files.length == 0 ) { %>
+            <section class="file-section @container/files w-full flex flex-col items-center justify-center h-fit px-4 py-4">
+                <div class="w-full flex flex-col items-center justify-center gap-2 py-3 bg-[#f5f7fa]">
+                    <div class="w-fit flex flex-col items-center justify-center gap-2 bg-white rounded-lg p-6 border border-gray-200 shadow-xs">
+                        <h2 class="text-gray-700  w-fit text-center text-base font-semibold ">No files in this folder</h2>
+                    </div>
+                </div>
+            </section>
+        <% } %>
+        
+        
+        
+    </main>
+    <%- include('partials/footer') %>
+    <script defer src="/js/showDialogue.js"></script>
+    <script defer src="/js/popoverAction.js"></script>
+    <script defer src="/js/uploadFile.js"></script>
+    <script defer src="/js/genrateShareLink.js"></script>
+</body>
+</html>
