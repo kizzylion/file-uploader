@@ -104,7 +104,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     };
 
     listItem.appendChild(removeBtn);
-    console.log(file.type);
+    // console.log(file.type);
     fileList.appendChild(listItem);
   }
 

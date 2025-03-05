@@ -157,7 +157,7 @@ const dashboardController = {
         previewUrl: file.type.includes("pdf") ? previewUrl(file.url) : null,
       };
     });
-    console.log("files", filesWithPreviewUrl);
+    // console.log("files", filesWithPreviewUrl);
     let shareUrl;
     res.render("dashboard", { folders, files: filesWithPreviewUrl, shareUrl });
   },
@@ -263,8 +263,8 @@ const dashboardController = {
       const userId = req.user.id;
 
       const files = req.files;
-      console.log("parentFolderId", parentFolderId);
-      console.log("files", files);
+      // console.log("parentFolderId", parentFolderId);
+      // console.log("files", files);
 
       // upload all files to cloudinary
       const uploadedPromises = files.map((file: any) =>
@@ -275,7 +275,7 @@ const dashboardController = {
 
       const cloudinaryResults = await Promise.all(uploadedPromises);
 
-      console.log("cloudinaryResults", cloudinaryResults);
+      // console.log("cloudinaryResults", cloudinaryResults);
 
       if (parentFolderId === "") {
         // create file in the database
@@ -516,7 +516,7 @@ const dashboardController = {
   },
   postShare: async (req: any, res: any) => {
     console.log("Received a share request for folder:", req.params.folderId);
-    console.log("Request body:", req.body); // Inspect if the body is correct
+    // console.log("Request body:", req.body); // Inspect if the body is correct
     try {
       const folderId = req.params.folderId;
       let duration = req.body.duration;
