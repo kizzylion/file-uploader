@@ -96,7 +96,6 @@ const indexController = {
   showSharedLink: async (req: any, res: any) => {
     const token = req.params.token;
     const folderId = req.params.folderId;
-    console.log(token);
 
     const sharedLink = await prisma.shareLink.findUnique({
       where: {

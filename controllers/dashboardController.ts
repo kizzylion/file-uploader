@@ -374,6 +374,67 @@ const dashboardController = {
       res.status(500).json({ error: "Failed to download file" });
     }
   },
+  downloadSharedFiles: async (req: any, res: any) => {
+    try {
+      const token = req.params.token;
+      const sharedLink = await prisma.shareLink.findUnique({
+        where: {
+          token: token,
+          expiresAt: { gt: new Date() },
+        },
+      });
+
+      if (!sharedLink) res.status(404).render("404");
+
+      const fileId = req.params.fileId;
+      const file = await prisma.file.findUnique({
+        where: { id: fileId },
+      });
+      if (!file) {
+        return res.status(404).json({ error: "File not found" });
+      }
+      // Append the parameter to the url to force download
+      const downloadUrl =
+        file?.url + "?response-content-disposition=attachment";
+
+      // using fetch to retrieve the file from cloudinary
+      const response = await fetch(downloadUrl);
+
+      if (!response.ok) {
+        return res
+          .status(500)
+          .json({ error: "Error fetching file from cloudinary" });
+      }
+
+      const contentType = response.headers.get("content-type");
+
+      if (contentType) {
+        res.setHeader("Content-Type", contentType);
+      }
+
+      const urlObj = new URL(file.url);
+      const extension = path.extname(urlObj.pathname);
+
+      // ensure the filename has the correct extension
+
+      const fileNameWithExtension = file.name + extension;
+      // const fileName = file.name;
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="${fileNameWithExtension}"`
+      );
+
+      // convert the web ReadableStream to a node.js Readable stream
+      const stream = Readable.from(response.body as any);
+
+      stream.pipe(res);
+
+      // open the file in the browser
+    } catch (error) {
+      console.log("error", error);
+      res.status(500).json({ error: "Failed to download file" });
+    }
+  },
   // delete folder, check if the folder is empty, if not, all the files in the folder will be deleted
   deleteFolder: async (req: any, res: any) => {
     const folderId = req.params.folderId;

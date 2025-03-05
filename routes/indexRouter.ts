@@ -3,6 +3,7 @@ const routes = Router();
 import indexController from "../controllers/indexController";
 const { body } = require("express-validator");
 import prisma from "../config/prisma";
+import dashboardController from "../controllers/dashboardController";
 
 routes.get("/", indexController.getLandingPage);
 
@@ -55,5 +56,9 @@ routes.get("/logout", indexController.logout);
 
 routes.get("/shared/:token", indexController.showSharedLink);
 routes.get("/shared/:token/:folderId", indexController.showSharedLink);
+routes.get(
+  "/shared/:token/download/:fileId",
+  dashboardController.downloadSharedFiles
+);
 
 export default routes;
