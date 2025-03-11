@@ -444,7 +444,16 @@ const dashboardController = {
       where: { id: folderId, ownerId: userId },
       include: {
         files: true,
-        children: true,
+        children: {
+          include: {
+            files: true,
+            children: {
+              include: {
+                files: true,
+              },
+            },
+          },
+        },
       },
     });
 
@@ -453,7 +462,13 @@ const dashboardController = {
       return res.redirect("/app");
     }
 
-    folder.files.forEach(async (file) => {
+    // Delete related share links before deleting the folder
+    await prisma.shareLink.deleteMany({
+      where: { folderId: folderId },
+    });
+
+    // Delete associated files
+    for (const file of folder.files) {
       try {
         if (file.publicId) {
           await cloudinary.uploader.destroy(file.publicId);
@@ -468,10 +483,10 @@ const dashboardController = {
         console.log(error);
         return;
       }
-    });
+    }
 
+    // Recursively delete child folders
     if (folder.children.length > 0) {
-      // recursively delete all the files in the folder
       await deleteFolderRecursively(folderId);
     } else {
       await prisma.folder.delete({
