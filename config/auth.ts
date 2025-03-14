@@ -9,7 +9,7 @@ passport.use(
     { usernameField: "username" },
     async (username: string, password: string, done: Function) => {
       try {
-        const user = await prisma.user.findUnique({ where: { username } });
+        const user = await prisma.user.findUnique({ where: { username: username.toLowerCase(), } });
         if (!user) return done(null, false);
         const isPasswordValid = comparePassword(password, user.password);
         if (!isPasswordValid) return done(null, false);
