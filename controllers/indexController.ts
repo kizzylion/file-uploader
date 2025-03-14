@@ -65,7 +65,7 @@ const indexController = {
     const { username, password } = req.body;
     const user = await prisma.user.findUnique({
       where: {
-        username,
+        username.toLowerCase(),
       },
     });
     if (!user) {
