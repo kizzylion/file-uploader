@@ -62,12 +62,11 @@ const indexController = {
       req.flash("error", errors.array()[0].msg);
       return res.redirect("/login");
     }
-    let { username, password } = req.body;
-    username = username.toLowerCase()
+    const { username, password } = req.body;
 
     const user = await prisma.user.findUnique({
       where: {
-        username,
+        username: username.toLowerCase(),
       },
     });
     if (!user) {
